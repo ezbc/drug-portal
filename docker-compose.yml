@@ -1,0 +1,33 @@
+version: '3'
+services:
+  functions:
+    build:
+      context: ./drug-portal-gcp
+    command: 
+      /bin/sh -c "echo ${GCP_PROJECT_ID}|functions config set projectId ${GCP_PROJECT_ID} && functions config set supervisorHost 0.0.0.0"
+    command:
+      /bin/sh -c "functions start && tail -f /dev/null"
+    ports:
+      - 8010:8010
+    volumes:
+      - gcloudConfig:/root/.config
+      - ./:${CONTAINER_WORKING_DIR}
+    working_dir: ${CONTAINER_WORKING_DIR} 
+  pubsub:
+    build: ./drug-portal-gcp
+    command: /bin/sh -c "gcloud beta emulators pubsub start --host-port=localhost:${GCP_PUBSUB_PORT} && tail -f /dev/null"
+    ports:
+      - ${GCP_PUBSUB_PORT}:${GCP_PUBSUB_PORT}
+    volumes:
+      - gcloudConfig:/root/.config
+      - ./:${CONTAINER_WORKING_DIR}
+    working_dir: ${CONTAINER_WORKING_DIR} 
+  gcloud:
+    build: ./drug-portal-gcp
+    command: gcloud config set project ${GCP_PROJECT_ID}
+    volumes:
+      - gcloudConfig:/root/.config
+      - ./:${CONTAINER_WORKING_DIR}
+    working_dir: ${CONTAINER_WORKING_DIR} 
+volumes:
+  gcloudConfig:
