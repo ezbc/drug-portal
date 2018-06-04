@@ -1,2 +1,9 @@
 drug-portal*
 .env
+.gradle
+.metadata
+.recommenders
+config_default
+.vscode
+example
+RemoteSystemsTempFiles

@@ -4,10 +4,11 @@ services:
     build:
       context: ./drug-portal-gcp
     command: 
-      /bin/sh -c "echo ${GCP_PROJECT_ID}|functions config set projectId ${GCP_PROJECT_ID} && functions config set supervisorHost 0.0.0.0"
+      /bin/sh -c "echo ${GCP_PROJECT_ID}|functions config set projectId ${GCP_PROJECT_ID}"
     command:
       /bin/sh -c "functions start && tail -f /dev/null"
     ports:
+      - 8008:8008
       - 8010:8010
     volumes:
       - gcloudConfig:/root/.config
@@ -29,5 +30,54 @@ services:
       - gcloudConfig:/root/.config
       - ./:${CONTAINER_WORKING_DIR}
     working_dir: ${CONTAINER_WORKING_DIR} 
+  corb:
+    build:
+      context: ./drug-portal-marklogic/gradle
+      args:
+        CORB_JAR_PATH: "${CORB_JAR_PATH}"
+    container_name: corb
+    image: gradle:ml${ML_VERSION}
+    hostname: corb
+    volumes:
+      - ./:${CONTAINER_WORKING_DIR}
+    working_dir: ${CONTAINER_WORKING_DIR} 
+  odh:
+    build:
+      context: drug-portal-marklogic/gradle
+      args:
+        ODH_INSTALL_PATH: "${ODH_INSTALL_PATH}"
+    container_name: odh
+    hostname: odh
+    image: gradle:ml${ML_VERSION}
+    command: "java -jar /opt/odh/${ODH_INSTALL_PATH}"
+    ports:
+      - "${ODH_PORT}:8080"
+    volumes:
+      - ./drug-portal-odh/:${CONTAINER_WORKING_DIR}
+    working_dir: ${CONTAINER_WORKING_DIR}
+  mlcp:
+    build:
+      context: ./drug-portal-marklogic/gradle
+      args:
+        CORB_JAR_PATH: "${CORB_JAR_PATH}"
+    container_name: mlcp
+    image: gradle:ml${ML_VERSION}
+    hostname: mlcp
+    volumes:
+      - ./:${CONTAINER_WORKING_DIR}
+    working_dir: ${CONTAINER_WORKING_DIR} 
+  marklogic:
+    build:
+      context: ./drug-portal-marklogic/marklogic
+      args:
+        ML_INSTALL_PATH: "${ML_INSTALL_PATH}"
+    image: "marklogic:marklogic${ML_VERSION}"
+    container_name: "marklogic"
+    hostname: marklogic
+    volumes:
+      - "./${LOCAL_VOLUME_DIR}/marklogic${ML_VERSION}-${BUILD_ENV}-1:/var/opt/MarkLogic"
+    ports:
+      - "${ML_PORT_LOWER}-${ML_PORT_UPPER}:${ML_PORT_LOWER}-${ML_PORT_UPPER}"
+    command: /bin/sh -c "/etc/init.d/MarkLogic start && tail -f /dev/null"
 volumes:
   gcloudConfig:
