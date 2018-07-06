@@ -71,6 +71,7 @@ services:
       context: ./drug-portal-marklogic/marklogic
       args:
         ML_INSTALL_PATH: "${ML_INSTALL_PATH}"
+        ML_CONVERTERS_PATH: "${ML_CONVERTERS_PATH}"
     image: "marklogic:marklogic${ML_VERSION}"
     container_name: "marklogic"
     hostname: marklogic
@@ -78,6 +79,21 @@ services:
       - "./${LOCAL_VOLUME_DIR}/marklogic${ML_VERSION}-${BUILD_ENV}-1:/var/opt/MarkLogic"
     ports:
       - "${ML_PORT_LOWER}-${ML_PORT_UPPER}:${ML_PORT_LOWER}-${ML_PORT_UPPER}"
+      - 8040-8050:8040-8050
     command: /bin/sh -c "/etc/init.d/MarkLogic start && tail -f /dev/null"
+  slush:
+    build:
+      context: drug-portal-marklogic/slush
+    container_name: slush
+    hostname: slush
+    image: ruby-node
+    ports:
+      - 3000:3000
+      - 9070:9070
+      - 8030:8030
+    volumes:
+      - ./drug-portal-slush-app/:${CONTAINER_WORKING_DIR}
+    working_dir: ${CONTAINER_WORKING_DIR}
+    command: /bin/sh -c "gulp serve-local && tail -f /dev/null"
 volumes:
   gcloudConfig:
