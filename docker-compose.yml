@@ -4,7 +4,7 @@ services:
     build:
       context: ./drug-portal-gcp
     command: 
-      /bin/sh -c "echo ${GCP_PROJECT_ID}|functions config set projectId ${GCP_PROJECT_ID}"
+      /bin/sh -c "echo ${GCP_PROJECT_ID}|functions config set projectId ${GCP_PROJECT_ID} && functions config set bindHost 0.0.0.0"
     command:
       /bin/sh -c "functions start && tail -f /dev/null"
     ports:
@@ -12,7 +12,7 @@ services:
       - 8010:8010
     volumes:
       - gcloudConfig:/root/.config
-      - ./:${CONTAINER_WORKING_DIR}
+      - ./drug-portal-cloud-functions:${CONTAINER_WORKING_DIR}
     working_dir: ${CONTAINER_WORKING_DIR} 
   pubsub:
     build: ./drug-portal-gcp

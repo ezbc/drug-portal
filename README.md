@@ -17,10 +17,16 @@ docker-compose up
 
 ```docker-compose run gcloud gcloud auth login```
 
-## Check Status of Functions
+
+
+## Functions
 
 Since the functions service is running already use `exec`
 
 ```docker-compose exec functions functions status```
+
+Set default application credentials
+
+```docker-compose run gcloud gcloud auth application-default login --no-launch-browser```
 
 
