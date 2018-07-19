@@ -7,7 +7,13 @@ services:
       /bin/sh -c "echo ${GCP_PROJECT_ID}|functions config set projectId ${GCP_PROJECT_ID} && functions config set bindHost 0.0.0.0"
     command:
       /bin/sh -c "functions start && tail -f /dev/null"
+    environment:
+      - PUBSUB_EMULATOR_HOST=pubsub:8085
+    depends_on:
+      - pubsub
+    hostname: functions
     ports:
+      - 5858:5858
       - 8008:8008
       - 8010:8010
     volumes:
@@ -16,7 +22,8 @@ services:
     working_dir: ${CONTAINER_WORKING_DIR} 
   pubsub:
     build: ./drug-portal-gcp
-    command: /bin/sh -c "gcloud beta emulators pubsub start --host-port=localhost:${GCP_PUBSUB_PORT} && tail -f /dev/null"
+    command: /bin/sh -c "gcloud beta emulators pubsub start --host-port=0.0.0.0:${GCP_PUBSUB_PORT} && tail -f /dev/null"
+    hostname: pubsub
     ports:
       - ${GCP_PUBSUB_PORT}:${GCP_PUBSUB_PORT}
     volumes:
